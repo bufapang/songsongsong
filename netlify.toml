@@ -1,0 +1,13 @@
+
+[build]
+  command = "mkdir -p dist && cp index.html dist/ && cp -r api dist/ 2>/dev/null || true"
+  publish = "dist"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[functions]]
+  directory = "api"
+  node_bundler = "esbuild"
