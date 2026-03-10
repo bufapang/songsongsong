@@ -2,11 +2,6 @@
   "version": 2,
   "buildCommand": "mkdir -p public && cp index.html public/",
   "devCommand": "python3 -m http.server 3000",
-  "functions": {
-    "api/generate.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "routes": [
     {
       "src": "/api/generate",
