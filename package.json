@@ -1,0 +1,11 @@
+{
+  "name": "voice-singer",
+  "version": "1.0.0",
+  "description": "AI voice singing website",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=20.x"
+  }
+}
