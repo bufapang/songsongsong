@@ -62,7 +62,7 @@ export default async function handler(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: '4d407e9c8583c8b83e9737b4e623a67f391c0f3c3b0e8d338c7f1e56d3e4b5c6',
+        version: 'a82b15da344f8f5ef6a4e255ad8825b46b1d67e23c3a53456a59704c81d4e7b5',
         input: {
           speaker_audio: voiceDataUri,
           input_audio: song.vocalsUrl,
@@ -80,7 +80,7 @@ export default async function handler(request) {
     if (!response.ok) {
       const error = await response.text();
       console.error('Replicate API error:', error);
-      throw new Error(`Replicate API request failed: ${response.status}`);
+      throw new Error(`Replicate API request failed: ${response.status} - ${error}`);
     }
 
     const prediction = await response.json();
