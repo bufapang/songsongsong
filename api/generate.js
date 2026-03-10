@@ -1,6 +1,4 @@
-// Vercel Edge Function
-import Replicate from 'replicate';
-
+// Vercel Edge Function - 用原生HTTP请求调用Replicate，没有依赖问题
 export const config = {
   runtime: 'edge',
 };
@@ -19,12 +17,7 @@ export default async function handler(request) {
       return new Response('Missing parameters', { status: 400 });
     }
 
-    // 初始化Replicate客户端
-    const replicate = new Replicate({
-      auth: process.env.REPLICATE_API_TOKEN,
-    });
-
-    // 歌曲配置 - 已经处理好的歌曲URL
+    // 歌曲配置
     const songConfigs = {
       'sunny': {
         name: '晴天',
@@ -48,49 +41,82 @@ export default async function handler(request) {
       return new Response('Invalid song ID', { status: 400 });
     }
 
+    // 获取Replicate Token
+    const replicateToken = process.env.REPLICATE_API_TOKEN;
+    if (!replicateToken) {
+      return new Response('Replicate API Token not configured', { status: 500 });
+    }
+
     // 将用户上传的声音文件转换为base64
     const voiceArrayBuffer = await voiceFile.arrayBuffer();
     const voiceBase64 = Buffer.from(voiceArrayBuffer).toString('base64');
     const voiceDataUri = `data:audio/wav;base64,${voiceBase64}`;
 
-    // 调用Replicate的so-vits-svc模型
     console.log('开始调用Replicate API...');
-    const output = await replicate.run(
-      "cjwbw/so-vits-svc:4.0",
-      {
+    
+    // 直接用HTTP调用Replicate API，不用SDK，避免依赖问题
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${replicateToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        version: '4d407e9c8583c8b83e9737b4e623a67f391c0f3c3b0e8d338c7f1e56d3e4b5c6',
         input: {
-          // 用户上传的声音样本
           speaker_audio: voiceDataUri,
-          // 要转换的歌曲干声
           input_audio: song.vocalsUrl,
-          // 转换参数（调优用）
-          f0_up_key: 0, // 音调调整，0为不变
-          auto_predict_f0: true, // 自动预测音调
+          auto_predict_f0: true,
+          f0_up_key: 0,
           cluster_infer_ratio: 0.0,
           noise_scale: 0.5,
           pad_seconds: 0.5,
           chunk_seconds: 30.0,
           db_thresh: -40
         }
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Replicate API error:', error);
+      throw new Error(`Replicate API request failed: ${response.status}`);
+    }
+
+    const prediction = await response.json();
+    console.log('Prediction created:', prediction.id);
+
+    // 轮询等待预测完成
+    let output;
+    while (true) {
+      const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+        headers: {
+          'Authorization': `Token ${replicateToken}`,
+        }
+      });
+
+      const status = await statusResponse.json();
+      
+      if (status.status === 'succeeded') {
+        output = status.output;
+        break;
       }
-    );
+      
+      if (status.status === 'failed') {
+        throw new Error(`Prediction failed: ${status.error}`);
+      }
+      
+      // 等2秒再轮询
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
 
     console.log('Replicate API调用完成，输出:', output);
-
-    // output是转换后的人声音频URL
-    const convertedVocalsUrl = output;
-
-    // 这里可以添加混音逻辑：将转换后的人声和伴奏合并
-    // 简单方案：直接返回转换后的人声，前端播放时可以同时播放伴奏
-    // 进阶方案：用ffmpeg-wasm在前端混音，或者调用后端混音服务
 
     return new Response(JSON.stringify({
       success: true,
       songName: song.name,
-      vocalsUrl: convertedVocalsUrl,
-      instrumentalUrl: song.instrumentalUrl,
-      // 如果你做了混音，可以直接返回完整歌曲URL
-      // fullSongUrl: mixedUrl
+      vocalsUrl: output,
+      instrumentalUrl: song.instrumentalUrl
     }), {
       headers: {
         'Content-Type': 'application/json',
