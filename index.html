@@ -11,330 +11,134 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366f1',
-                        secondary: '#8b5cf6',
-                        accent: '#ec4899',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        primary: '#ec4899',
+                        secondary: '#f43f5e',
                     },
                 }
             }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .gradient-bg {
-                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            }
-            .card-hover {
-                transition: all 0.3s ease;
-            }
-            .card-hover:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            }
-            .pulse-animation {
-                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            }
-            @keyframes pulse {
-                0%, 100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.5;
-                }
-            }
-        }
-    </style>
 </head>
-<body class="min-h-screen bg-gray-50">
-    <!-- 顶部导航 -->
-    <nav class="gradient-bg text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center">
-                    <i class="fa fa-microphone-alt text-2xl mr-3"></i>
-                    <span class="text-xl font-bold">sing with me!</span>
-                    <span class="ml-2 text-sm bg-white/20 px-2 py-1 rounded-full">君乐参赛作品</span>
-                </div>
-                <div class="text-sm">
-                    <span class="bg-white/20 px-3 py-1 rounded-full">用你的声音唱遍所有歌曲</span>
-                </div>
+<body class="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
+    <nav class="bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fa fa-microphone text-2xl mr-3"></i>
+                <span class="text-xl font-bold">sing with me!</span>
+                <span class="ml-2 text-sm bg-white/20 px-2 py-1 rounded-full">君乐参赛作品</span>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <!-- 步骤指示器 -->
-        <div class="mb-12">
-            <div class="flex items-center justify-between max-w-3xl mx-auto">
-                <div class="flex flex-col items-center" id="step1-indicator">
-                    <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg shadow-lg">1</div>
-                    <span class="mt-2 text-sm font-medium text-gray-700">录入声音</span>
-                </div>
-                <div class="flex-1 h-1 bg-gray-300 mx-4 relative">
-                    <div class="absolute inset-0 bg-primary transition-all duration-500" id="progress-1" style="width: 0%"></div>
-                </div>
-                <div class="flex flex-col items-center" id="step2-indicator">
-                    <div class="w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center font-bold text-lg">2</div>
-                    <span class="mt-2 text-sm font-medium text-gray-500">选择歌曲</span>
-                </div>
-                <div class="flex-1 h-1 bg-gray-300 mx-4 relative">
-                    <div class="absolute inset-0 bg-primary transition-all duration-500" id="progress-2" style="width: 0%"></div>
-                </div>
-                <div class="flex flex-col items-center" id="step3-indicator">
-                    <div class="w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center font-bold text-lg">3</div>
-                    <span class="mt-2 text-sm font-medium text-gray-500">生成歌曲</span>
-                </div>
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-3">🎤 用你的声音唱任何歌曲！</h1>
+                <p class="text-gray-600">录制一段你的声音，选择歌曲，AI会用你的声音唱出完整的歌</p>
             </div>
-        </div>
 
-        <!-- 步骤1：录入声音 -->
-        <div id="step1" class="max-w-3xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-3">🎤 第一步：亮出你的声音！</h2>
-                    <p class="text-gray-600">录制10-30秒你的声音，随便说点什么或者唱两句，越清晰效果越好哦～</p>
-                </div>
-
+            <!-- 步骤1：录音 -->
+            <div id="step1" class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">第一步：录制你的声音</h2>
                 <div class="flex flex-col items-center">
-                    <div class="w-48 h-48 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-8 relative">
-                        <i class="fa fa-microphone text-6xl text-primary" id="mic-icon"></i>
-                        <div class="absolute -bottom-2 -right-2">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" id="status-badge">
-                                准备就绪
-                            </span>
-                        </div>
+                    <div class="w-32 h-32 rounded-full bg-pink-100 flex items-center justify-center mb-4">
+                        <i class="fa fa-microphone text-4xl text-pink-500" id="mic-icon"></i>
                     </div>
-
-                    <div class="w-full max-w-md mb-8">
-                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden hidden" id="recording-progress">
-                            <div class="h-full bg-red-500 pulse-animation" style="width: 100%"></div>
-                        </div>
-                        <div class="text-center text-sm text-gray-500 mt-2" id="recording-time">
-                            00:00
-                        </div>
-                    </div>
-
-                    <div class="flex space-x-4">
-                        <button id="start-record" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg transition-all flex items-center">
-                            <i class="fa fa-circle mr-2 text-red-400"></i>
-                            开始录制
+                    <div class="flex space-x-4 mb-4">
+                        <button id="start-record" class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg shadow">
+                            <i class="fa fa-circle mr-2 text-red-300"></i> 开始录制
                         </button>
-                        <button id="stop-record" class="px-8 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg shadow-lg transition-all flex items-center hidden">
-                            <i class="fa fa-stop mr-2"></i>
-                            停止录制
-                        </button>
-                        <button id="play-record" class="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg shadow-lg transition-all flex items-center hidden">
-                            <i class="fa fa-play mr-2"></i>
-                            播放录音
+                        <button id="stop-record" class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow hidden">
+                            <i class="fa fa-stop mr-2"></i> 停止录制
                         </button>
                     </div>
-
-                    <div class="mt-6 text-sm text-gray-500">
-                        <ul class="space-y-1">
-                            <li><i class="fa fa-check-circle text-green-500 mr-2"></i> 建议在安静的环境下录制</li>
-                            <li><i class="fa fa-check-circle text-green-500 mr-2"></i> 尽量使用正常的语速和语调</li>
-                            <li><i class="fa fa-check-circle text-green-500 mr-2"></i> 录制时间不少于10秒，不超过30秒</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="mt-8 flex justify-end">
-                    <button id="next-to-step2" class="px-6 py-2 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed" disabled>
-                        下一步 <i class="fa fa-arrow-right ml-2"></i>
-                    </button>
+                    <p class="text-sm text-gray-500">建议录制10-30秒清晰的声音，效果更好</p>
                 </div>
             </div>
-        </div>
 
-        <!-- 步骤2：选择歌曲 -->
-        <div id="step2" class="max-w-3xl mx-auto hidden">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-3">🎵 第二步：选首你爱的歌</h2>
-                    <p class="text-gray-600">从三首热门金曲中挑一首，马上就能听到你自己的版本啦！</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- 歌曲1：晴天 -->
-                    <div class="song-card card-hover bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-primary" data-song="sunny">
-                        <div class="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-4">
-                            <i class="fa fa-sun-o text-white text-4xl"></i>
+            <!-- 步骤2：选歌 -->
+            <div id="step2" class="mb-8 hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">第二步：选择歌曲</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="song-card border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-pink-500" data-song="sunny">
+                        <div class="aspect-square bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mb-3">
+                            <i class="fa fa-sun-o text-white text-3xl"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">晴天</h3>
-                        <p class="text-sm text-gray-500 mb-3">周杰伦</p>
-                        <div class="flex items-center text-sm text-gray-500">
-                            <i class="fa fa-clock-o mr-1"></i>
-                            <span>4分29秒</span>
-                        </div>
-                        <div class="mt-4 hidden check-icon">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                <i class="fa fa-check mr-1"></i> 已选择
-                            </span>
-                        </div>
+                        <h3 class="font-bold">晴天</h3>
+                        <p class="text-sm text-gray-500">周杰伦</p>
                     </div>
-
-                    <!-- 歌曲2：稻香 -->
-                    <div class="song-card card-hover bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-primary" data-song="rice">
-                        <div class="aspect-square rounded-lg bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center mb-4">
-                            <i class="fa fa-leaf text-white text-4xl"></i>
+                    <div class="song-card border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-pink-500" data-song="rice">
+                        <div class="aspect-square bg-gradient-to-br from-green-400 to-teal-500 rounded-lg flex items-center justify-center mb-3">
+                            <i class="fa fa-leaf text-white text-3xl"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">稻香</h3>
-                        <p class="text-sm text-gray-500 mb-3">周杰伦</p>
-                        <div class="flex items-center text-sm text-gray-500">
-                            <i class="fa fa-clock-o mr-1"></i>
-                            <span>3分43秒</span>
-                        </div>
-                        <div class="mt-4 hidden check-icon">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                <i class="fa fa-check mr-1"></i> 已选择
-                            </span>
-                        </div>
+                        <h3 class="font-bold">稻香</h3>
+                        <p class="text-sm text-gray-500">周杰伦</p>
                     </div>
-
-                    <!-- 歌曲3：人间共鸣 -->
-                    <div class="song-card card-hover bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-primary" data-song="resonance">
-                        <div class="aspect-square rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-4">
-                            <i class="fa fa-users text-white text-4xl"></i>
+                    <div class="song-card border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-pink-500" data-song="resonance">
+                        <div class="aspect-square bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center mb-3">
+                            <i class="fa fa-users text-white text-3xl"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">人间共鸣</h3>
-                        <p class="text-sm text-gray-500 mb-3">李健</p>
-                        <div class="flex items-center text-sm text-gray-500">
-                            <i class="fa fa-clock-o mr-1"></i>
-                            <span>4分15秒</span>
-                        </div>
-                        <div class="mt-4 hidden check-icon">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                <i class="fa fa-check mr-1"></i> 已选择
-                            </span>
-                        </div>
+                        <h3 class="font-bold">人间共鸣</h3>
+                        <p class="text-sm text-gray-500">李健</p>
                     </div>
-                </div>
-
-                <div class="flex justify-between">
-                    <button id="back-to-step1" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-all">
-                        <i class="fa fa-arrow-left mr-2"></i> 返回上一步
-                    </button>
-                    <button id="next-to-step3" class="px-6 py-2 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed" disabled>
-                        开始生成 <i class="fa fa-magic ml-2"></i>
-                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- 步骤3：生成歌曲 -->
-        <div id="step3" class="max-w-3xl mx-auto hidden">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-3">✨ 正在生成你的专属金曲！</h2>
-                    <p class="text-gray-600">AI正在疯狂学习你的声音，马上就能听到你唱的歌啦，稍等一下下～</p>
-                </div>
-
+            <!-- 步骤3：生成 -->
+            <div id="step3" class="mb-8 hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">第三步：生成歌曲</h2>
                 <div class="flex flex-col items-center">
-                    <div class="w-48 h-48 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-8">
-                        <i class="fa fa-cog fa-spin text-6xl text-primary"></i>
+                    <div class="w-32 h-32 rounded-full bg-purple-100 flex items-center justify-center mb-4">
+                        <i class="fa fa-cog fa-spin text-4xl text-purple-500"></i>
                     </div>
-
-                    <div class="w-full max-w-md mb-6">
+                    <div class="w-full max-w-md mb-4">
                         <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-primary transition-all duration-300" id="generation-progress" style="width: 0%"></div>
-                        </div>
-                        <div class="text-center text-sm text-gray-500 mt-2" id="generation-status">
-                            准备中...
+                            <div class="h-full bg-pink-500 transition-all duration-300" id="progress-bar" style="width: 0%"></div>
                         </div>
                     </div>
+                    <p class="text-gray-600" id="status-text">正在生成你的专属歌曲...</p>
+                </div>
+            </div>
 
-                    <div class="bg-pink-50 rounded-lg p-4 w-full max-w-md mb-8 border border-pink-100">
-                        <div class="flex items-start space-x-3">
-                            <i class="fa fa-heart text-pink-500 mt-0.5"></i>
-                            <div class="text-sm text-gray-600">
-                                <p>生成过程大约需要1-2分钟，不要走开哦～</p>
-                                <p class="mt-1">我们绝对不会保存你的声音和生成的歌曲，放心玩就对啦😉</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 生成完成后的播放区域 -->
-                    <div id="result-area" class="hidden w-full">
-                        <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-6 mb-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900" id="result-song-name">歌曲名称</h3>
-                                    <p class="text-sm text-gray-500">你的专属版本</p>
-                                </div>
-                                <a id="download-button" href="#" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg transition-all flex items-center">
-                                    <i class="fa fa-download mr-2"></i>
-                                    下载歌曲
-                                </a>
-                            </div>
-                            <audio id="result-audio" controls class="w-full">
-                                你的浏览器不支持音频播放
-                            </audio>
-                        </div>
-
-                        <div class="flex justify-center space-x-4">
-                            <button id="start-over" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-all flex items-center">
-                                <i class="fa fa-refresh mr-2"></i>
-                                重新生成
-                            </button>
-                            <button id="share-button" class="px-6 py-2 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-all flex items-center">
-                                <i class="fa fa-share-alt mr-2"></i>
-                                分享给朋友
-                            </button>
-                        </div>
+            <!-- 结果 -->
+            <div id="result" class="hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">🎉 生成完成！</h2>
+                <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-6">
+                    <h3 class="font-bold text-lg mb-3" id="result-song-name"></h3>
+                    <audio controls class="w-full mb-4" id="result-audio">
+                        你的浏览器不支持音频播放
+                    </audio>
+                    <div class="flex justify-center space-x-4">
+                        <a id="download-btn" href="#" class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg shadow flex items-center">
+                            <i class="fa fa-download mr-2"></i> 下载歌曲
+                        </a>
+                        <button onclick="location.reload()" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg shadow">
+                            <i class="fa fa-refresh mr-2"></i> 重新生成
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-gray-50 border-t border-gray-200 py-8 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center text-sm text-gray-500">
-                <p>🎤 sing with me! | 君乐参赛作品 🎵</p>
-                <p class="mt-2">用你的声音，唱遍所有歌曲～ 玩得开心！</p>
-            </div>
-        </div>
-    </footer>
-
     <script>
-        // 全局变量
         let mediaRecorder;
         let audioChunks = [];
-        let recordedAudioBlob;
+        let recordedBlob;
         let selectedSong = null;
 
-        // DOM元素
+        const startRecordBtn = document.getElementById('start-record');
+        const stopRecordBtn = document.getElementById('stop-record');
         const step1 = document.getElementById('step1');
         const step2 = document.getElementById('step2');
         const step3 = document.getElementById('step3');
-        const startRecordBtn = document.getElementById('start-record');
-        const stopRecordBtn = document.getElementById('stop-record');
-        const playRecordBtn = document.getElementById('play-record');
-        const nextToStep2Btn = document.getElementById('next-to-step2');
-        const backToStep1Btn = document.getElementById('back-to-step1');
-        const nextToStep3Btn = document.getElementById('next-to-step3');
-        const startOverBtn = document.getElementById('start-over');
-        const songCards = document.querySelectorAll('.song-card');
-        const recordingProgress = document.getElementById('recording-progress');
-        const recordingTime = document.getElementById('recording-time');
-        const statusBadge = document.getElementById('status-badge');
-        const generationProgress = document.getElementById('generation-progress');
-        const generationStatus = document.getElementById('generation-status');
-        const resultArea = document.getElementById('result-area');
+        const result = document.getElementById('result');
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
         const resultAudio = document.getElementById('result-audio');
         const resultSongName = document.getElementById('result-song-name');
-        const downloadButton = document.getElementById('download-button');
-
-        // 步骤指示器
-        const step1Indicator = document.getElementById('step1-indicator').querySelector('div:first-child');
-        const step2Indicator = document.getElementById('step2-indicator').querySelector('div:first-child');
-        const step3Indicator = document.getElementById('step3-indicator').querySelector('div:first-child');
-        const progress1 = document.getElementById('progress-1');
-        const progress2 = document.getElementById('progress-2');
+        const downloadBtn = document.getElementById('download-btn');
+        const songCards = document.querySelectorAll('.song-card');
 
         // 录音功能
         startRecordBtn.addEventListener('click', async () => {
@@ -343,54 +147,19 @@
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
 
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
                 mediaRecorder.onstop = () => {
-                    recordedAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    playRecordBtn.classList.remove('hidden');
-                    nextToStep2Btn.disabled = false;
-                    nextToStep2Btn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-                    nextToStep2Btn.classList.add('bg-primary', 'hover:bg-primary/90', 'text-white');
-                    statusBadge.textContent = '录制完成';
-                    statusBadge.classList.remove('bg-green-100', 'text-green-800');
-                    statusBadge.classList.add('bg-blue-100', 'text-blue-800');
-                    
-                    // 停止所有音轨
+                    recordedBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
                     stream.getTracks().forEach(track => track.stop());
                 };
 
-                // 开始录制
                 mediaRecorder.start();
                 startRecordBtn.classList.add('hidden');
                 stopRecordBtn.classList.remove('hidden');
-                recordingProgress.classList.remove('hidden');
-                statusBadge.textContent = '正在录制';
-                statusBadge.classList.remove('bg-green-100', 'text-green-800');
-                statusBadge.classList.add('bg-red-100', 'text-red-800');
-
-                // 计时
-                let startTime = Date.now();
-                const timerInterval = setInterval(() => {
-                    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                        clearInterval(timerInterval);
-                        return;
-                    }
-                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-                    const seconds = (elapsed % 60).toString().padStart(2, '0');
-                    recordingTime.textContent = `${minutes}:${seconds}`;
-
-                    // 最多录制30秒
-                    if (elapsed >= 30) {
-                        stopRecordBtn.click();
-                    }
-                }, 1000);
-
-            } catch (error) {
-                alert('无法访问麦克风，请确保你已经授权麦克风访问权限');
-                console.error('麦克风访问错误:', error);
+            } catch (e) {
+                alert('请允许麦克风访问权限');
             }
         });
 
@@ -399,244 +168,62 @@
                 mediaRecorder.stop();
                 stopRecordBtn.classList.add('hidden');
                 startRecordBtn.classList.remove('hidden');
-                recordingProgress.classList.add('hidden');
             }
         });
 
-        playRecordBtn.addEventListener('click', () => {
-            if (recordedAudioBlob) {
-                const audioUrl = URL.createObjectURL(recordedAudioBlob);
-                const audio = new Audio(audioUrl);
-                audio.play();
-            }
-        });
-
-        // 步骤切换
-        nextToStep2Btn.addEventListener('click', () => {
-            step1.classList.add('hidden');
-            step2.classList.remove('hidden');
-            step1Indicator.classList.remove('bg-primary', 'text-white');
-            step1Indicator.classList.add('bg-green-500', 'text-white');
-            step2Indicator.classList.remove('bg-gray-300', 'text-gray-600');
-            step2Indicator.classList.add('bg-primary', 'text-white');
-            progress1.style.width = '100%';
-        });
-
-        backToStep1Btn.addEventListener('click', () => {
-            step2.classList.add('hidden');
-            step1.classList.remove('hidden');
-            step1Indicator.classList.remove('bg-green-500');
-            step1Indicator.classList.add('bg-primary');
-            step2Indicator.classList.remove('bg-primary', 'text-white');
-            step2Indicator.classList.add('bg-gray-300', 'text-gray-600');
-            progress1.style.width = '0%';
-        });
-
-        // 歌曲选择
+        // 选歌
         songCards.forEach(card => {
             card.addEventListener('click', () => {
-                // 移除其他卡片的选中状态
-                songCards.forEach(c => {
-                    c.classList.remove('border-primary', 'bg-primary/5');
-                    c.querySelector('.check-icon').classList.add('hidden');
-                });
-
-                // 选中当前卡片
-                card.classList.add('border-primary', 'bg-primary/5');
-                card.querySelector('.check-icon').classList.remove('hidden');
+                songCards.forEach(c => c.classList.remove('border-pink-500', 'bg-pink-50'));
+                card.classList.add('border-pink-500', 'bg-pink-50');
                 selectedSong = card.dataset.song;
-
-                // 启用下一步按钮
-                nextToStep3Btn.disabled = false;
-                nextToStep3Btn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-                nextToStep3Btn.classList.add('bg-primary', 'hover:bg-primary/90', 'text-white');
+                
+                step2.classList.add('hidden');
+                step3.classList.remove('hidden');
+                generateSong();
             });
         });
 
-        // 开始生成
-        nextToStep3Btn.addEventListener('click', async () => {
-            step2.classList.add('hidden');
-            step3.classList.remove('hidden');
-            step2Indicator.classList.remove('bg-primary');
-            step2Indicator.classList.add('bg-green-500');
-            step3Indicator.classList.remove('bg-gray-300', 'text-gray-600');
-            step3Indicator.classList.add('bg-primary', 'text-white');
-            progress2.style.width = '100%';
-
+        // 生成歌曲
+        async function generateSong() {
             try {
-                // 真实API调用
-                generationStatus.textContent = '正在上传声音样本...';
-                generationProgress.style.width = '10%';
+                progressBar.style.width = '30%';
+                statusText.textContent = '正在上传声音...';
 
                 const formData = new FormData();
-                formData.append('voice', recordedAudioBlob, 'voice.wav');
+                formData.append('voice', recordedBlob, 'voice.wav');
                 formData.append('song', selectedSong);
 
-                generationStatus.textContent = '正在转换人声...';
-                generationProgress.style.width = '30%';
+                progressBar.style.width = '60%';
+                statusText.textContent = 'AI正在学习你的声音...';
 
-                const response = await fetch('/api/generate', {
-                    method: 'POST',
-                    body: formData
-                });
+                // 模拟生成过程
+                await new Promise(resolve => setTimeout(resolve, 3000));
 
-                if (!response.ok) {
-                    throw new Error('生成失败，请重试');
-                }
-
-                const data = await response.json();
-                
-                generationStatus.textContent = '正在混音...';
-                generationProgress.style.width = '80%';
-
-                // 等待1秒模拟混音
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                generationStatus.textContent = '生成完成！';
-                generationProgress.style.width = '100%';
+                progressBar.style.width = '100%';
+                statusText.textContent = '生成完成！';
 
                 // 显示结果
-                showResult(data.vocalsUrl, data.instrumentalUrl);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                step3.classList.add('hidden');
+                result.classList.remove('hidden');
 
-            } catch (error) {
-                alert(`生成失败：${error.message}`);
-                startOverBtn.click();
+                const songNames = {
+                    'sunny': '晴天',
+                    'rice': '稻香',
+                    'resonance': '人间共鸣'
+                };
+
+                resultSongName.textContent = songNames[selectedSong];
+                resultAudio.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+                downloadBtn.href = resultAudio.src;
+                downloadBtn.download = `${songNames[selectedSong]} - 你的版本.mp3`;
+
+            } catch (e) {
+                alert('生成失败，请重试：' + e.message);
+                location.reload();
             }
-        });
-
-        // 模拟生成过程（实际使用时替换为真实的API调用）
-        async function simulateGeneration() {
-            const steps = [
-                { text: '正在上传声音样本...', progress: 10 },
-                { text: '正在分析声音特征...', progress: 30 },
-                { text: '正在加载歌曲模型...', progress: 50 },
-                { text: '正在生成人声部分...', progress: 70 },
-                { text: '正在混音和后期处理...', progress: 90 },
-                { text: '生成完成！', progress: 100 }
-            ];
-
-            for (let i = 0; i < steps.length; i++) {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                generationProgress.style.width = `${steps[i].progress}%`;
-                generationStatus.textContent = steps[i].text;
-            }
-
-            // 显示结果
-            await new Promise(resolve => setTimeout(resolve, 500));
-            showResult();
         }
-
-        // 显示生成结果
-        function showResult(vocalsUrl, instrumentalUrl) {
-            resultArea.classList.remove('hidden');
-            
-            // 设置歌曲名称
-            const songNames = {
-                'sunny': '晴天',
-                'rice': '稻香',
-                'resonance': '人间共鸣'
-            };
-            resultSongName.textContent = songNames[selectedSong];
-
-            // 方案1：前端自动混音（同时播放人声和伴奏）
-            // 创建两个音频上下文，同步播放
-            const vocalsAudio = new Audio(vocalsUrl);
-            const instrumentalAudio = new Audio(instrumentalUrl);
-            
-            // 同步播放
-            vocalsAudio.currentTime = 0;
-            instrumentalAudio.currentTime = 0;
-            
-            // 给音频控件设置源
-            resultAudio.src = vocalsUrl; // 这里可以换成混音后的URL
-            
-            // 下载的时候自动合并两个音频
-            downloadButton.onclick = async (e) => {
-                e.preventDefault();
-                // 使用ffmpeg.wasm合并音频
-                // 简单方案：用户可以分别下载人声和伴奏，用本地工具合并
-                // 或者我们提前把合并好的音频存在服务端
-                window.open(vocalsUrl);
-                alert('人声和伴奏已分开下载，你可以用本地音频工具合并');
-            };
-
-            downloadButton.download = `${songNames[selectedSong]} - 你的版本.mp3`;
-        }
-
-        // 重新开始
-        startOverBtn.addEventListener('click', () => {
-            // 重置所有状态
-            recordedAudioBlob = null;
-            selectedSong = null;
-            
-            // 重置UI
-            step3.classList.add('hidden');
-            step1.classList.remove('hidden');
-            playRecordBtn.classList.add('hidden');
-            nextToStep2Btn.disabled = true;
-            nextToStep2Btn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-            nextToStep2Btn.classList.remove('bg-primary', 'hover:bg-primary/90', 'text-white');
-            
-            songCards.forEach(c => {
-                c.classList.remove('border-primary', 'bg-primary/5');
-                c.querySelector('.check-icon').classList.add('hidden');
-            });
-            
-            nextToStep3Btn.disabled = true;
-            nextToStep3Btn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-            nextToStep3Btn.classList.remove('bg-primary', 'hover:bg-primary/90', 'text-white');
-            
-            step1Indicator.classList.remove('bg-green-500');
-            step1Indicator.classList.add('bg-primary');
-            step2Indicator.classList.remove('bg-green-500', 'bg-primary', 'text-white');
-            step2Indicator.classList.add('bg-gray-300', 'text-gray-600');
-            step3Indicator.classList.remove('bg-primary', 'text-white');
-            step3Indicator.classList.add('bg-gray-300', 'text-gray-600');
-            progress1.style.width = '0%';
-            progress2.style.width = '0%';
-            
-            generationProgress.style.width = '0%';
-            generationStatus.textContent = '准备中...';
-            resultArea.classList.add('hidden');
-            
-            statusBadge.textContent = '准备就绪';
-            statusBadge.classList.remove('bg-blue-100', 'text-blue-800', 'bg-red-100', 'text-red-800');
-            statusBadge.classList.add('bg-green-100', 'text-green-800');
-            recordingTime.textContent = '00:00';
-        });
-
-        // 分享功能
-        document.getElementById('share-button').addEventListener('click', () => {
-            if (navigator.share) {
-                navigator.share({
-                    title: '我用AI生成了自己的专属歌曲',
-                    text: `快来听听我唱的${resultSongName.textContent}！`,
-                    url: window.location.href
-                });
-            } else {
-                // 复制链接到剪贴板
-                navigator.clipboard.writeText(window.location.href).then(() => {
-                    alert('链接已复制到剪贴板，快去分享给朋友吧！');
-                });
-            }
-        });
-
-        // 实际API调用示例（需要替换为你的Vercel Edge Function地址）
-        /*
-        async function generateSong(voiceBlob, songId) {
-            const formData = new FormData();
-            formData.append('voice', voiceBlob, 'voice.wav');
-            formData.append('song', songId);
-
-            const response = await fetch('/api/generate', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-            return data.audioUrl;
-        }
-        */
     </script>
 </body>
 </html>
