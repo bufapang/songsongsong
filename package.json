@@ -1,0 +1,11 @@
+{
+  "name": "voice-singer",
+  "version": "1.0.0",
+  "description": "AI voice singing website",
+  "dependencies": {
+    "replicate": "^0.25.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
