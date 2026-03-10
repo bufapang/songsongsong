@@ -1,4 +1,4 @@
-// Vercel Edge Function - Kits.ai 专业歌声转换实现
+// Vercel Edge Function - Kits.ai 专业歌声转换实现（最终版）
 export const config = {
   runtime: 'edge',
 };
@@ -17,19 +17,19 @@ export default async function handler(request) {
       return new Response('Missing parameters', { status: 400 });
     }
 
-    // 歌曲配置 - 替换为你上传的三首歌URL
+    // 歌曲配置 - 这里替换为你实际的三首歌曲URL
     const songConfigs = {
       'sunny': {
         name: '晴天',
-        songUrl: 'https://your-domain.com/songs/qingtian.mp3'
+        songUrl: 'https://github.com/bufapang/songsongsong/raw/main/songs/qingtian_duan.mp3'
       },
       'rice': {
         name: '稻香',
-        songUrl: 'https://your-domain.com/songs/daoxiang.mp3'
+        songUrl: 'https://github.com/bufapang/songsongsong/raw/main/songs/daoxiang_duan.mp3'
       },
       'resonance': {
         name: '人间共鸣',
-        songUrl: 'https://your-domain.com/songs/renjiangongming.mp3'
+        songUrl: 'https://github.com/bufapang/songsongsong/raw/main/songs/renjiangongming_duan.mp3'
       }
     };
 
@@ -41,7 +41,7 @@ export default async function handler(request) {
     // 获取Kits.ai API Key
     const kitsApiKey = process.env.KITS_API_KEY;
     if (!kitsApiKey) {
-      throw new Error('Kits.ai API Key not configured');
+      throw new Error('Kits.ai API Key 未配置，请在Vercel环境变量中添加KITS_API_KEY');
     }
 
     console.log('=== 开始Kits.ai歌声转换流程 ===');
@@ -67,7 +67,7 @@ export default async function handler(request) {
     if (!modelResponse.ok) {
       const error = await modelResponse.text();
       console.error('创建音色模型失败:', error);
-      throw new Error('音色训练失败');
+      throw new Error('音色训练失败，请重试');
     }
 
     const modelData = await modelResponse.json();
@@ -76,25 +76,26 @@ export default async function handler(request) {
 
     // 等待模型训练完成
     let modelReady = false;
+    let modelStatusData;
     for (let i = 0; i < 30; i++) {
       const statusResponse = await fetch(`https://api.kits.ai/v1/voice_models/${modelId}`, {
         headers: { 'Authorization': `Bearer ${kitsApiKey}` }
       });
-      const statusData = await statusResponse.json();
+      modelStatusData = await statusResponse.json();
       
-      if (statusData.status === 'ready') {
+      if (modelStatusData.status === 'ready') {
         modelReady = true;
         break;
       }
-      if (statusData.status === 'failed') {
-        throw new Error('音色训练失败');
+      if (modelStatusData.status === 'failed') {
+        throw new Error(`音色训练失败: ${modelStatusData.error || '未知错误'}`);
       }
       
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     if (!modelReady) {
-      throw new Error('音色训练超时');
+      throw new Error('音色训练超时，请重试');
     }
 
     // ------------------------------
@@ -109,14 +110,14 @@ export default async function handler(request) {
       },
       body: JSON.stringify({
         audio_url: song.songUrl,
-        separation_model: 'vr_model_1' // 专业歌声分离模型
+        separation_model: 'vr_model_1' // 专业歌声分离模型，效果最好
       })
     });
 
     if (!separationResponse.ok) {
       const error = await separationResponse.text();
       console.error('人声分离失败:', error);
-      throw new Error('人声分离失败');
+      throw new Error('人声分离失败，请重试');
     }
 
     const separationData = await separationResponse.json();
@@ -137,18 +138,19 @@ export default async function handler(request) {
       body: JSON.stringify({
         voice_model_id: modelId,
         source_audio_url: sourceVocalUrl,
-        f0_adjustment: 0, // 音调不变
-        pitch_extraction_method: 'crepe', // 最准确的音调提取
-        formant_shift: 0,
-        noise_reduction: 0.3,
-        auto_tune_strength: 0.2 // 轻微修音，更自然
+        f0_adjustment: 0, // 保持原调
+        pitch_extraction_method: 'crepe', // 最准确的音调提取算法
+        formant_shift: 0, // 保持音色特征
+        noise_reduction: 0.3, // 轻微降噪
+        auto_tune_strength: 0.2, // 轻微修音，更自然
+        volume_matching: true // 自动匹配音量
       })
     });
 
     if (!conversionResponse.ok) {
       const error = await conversionResponse.text();
       console.error('音色转换失败:', error);
-      throw new Error('音色转换失败');
+      throw new Error('音色转换失败，请重试');
     }
 
     const conversionData = await conversionResponse.json();
@@ -156,17 +158,16 @@ export default async function handler(request) {
     console.log('✅ 音色转换完成');
 
     // ------------------------------
-    // 步骤4：混音合成完整歌曲（可选，前端也可以做）
+    // 返回结果
     // ------------------------------
-    console.log('✅ 所有步骤完成！');
+    console.log('✅ 所有步骤完成，生成成功！');
 
     return new Response(JSON.stringify({
       success: true,
       songName: song.name,
       convertedVocalsUrl: convertedVocalUrl,
       instrumentalUrl: instrumentalUrl,
-      // 如果你做了后端混音，这里返回完整歌曲URL
-      // fullSongUrl: mixedUrl
+      message: '生成成功！点击播放即可听到你的专属版本~'
     }), {
       headers: {
         'Content-Type': 'application/json',
@@ -178,7 +179,7 @@ export default async function handler(request) {
     console.error('生成失败:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error.message || '生成失败，请重试'
+      error: error.message || '生成失败，请检查网络连接后重试'
     }), {
       status: 500,
       headers: {
