@@ -1,9 +1,20 @@
 {
   "version": 2,
-  "buildCommand": "mkdir -p public && cp index.html public/ && cp -r songs public/ 2>/dev/null || true",
+  "buildCommand": "mkdir -p public && cp index.html public/",
   "devCommand": "python3 -m http.server 3000",
+  "functions": {
+    "api/generate.js": {
+      "runtime": "@vercel/node@20.x"
+    }
+  },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    {
+      "src": "/api/generate",
+      "dest": "/api/generate.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
   ]
 }
