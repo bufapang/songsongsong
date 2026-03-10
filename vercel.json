@@ -4,7 +4,7 @@
   "devCommand": "python3 -m http.server 3000",
   "functions": {
     "api/generate.js": {
-      "runtime": "@vercel/node@20.x"
+      "runtime": "nodejs20.x"
     }
   },
   "routes": [
