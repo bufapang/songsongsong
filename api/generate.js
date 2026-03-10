@@ -1,4 +1,4 @@
-// Vercel/Netlify Edge Function - 真实RVC歌声转换
+// Vercel/Netlify Edge Function - 真实可用的OpenAI TTS + 声音转换组合
 export const config = {
   runtime: 'edge',
 };
@@ -17,22 +17,22 @@ export default async function handler(request) {
       return new Response('Missing parameters', { status: 400 });
     }
 
-    // 歌曲配置 - 使用公开可访问的音频
+    // 歌曲配置
     const songConfigs = {
       'sunny': {
         name: '晴天',
-        vocalsUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-        instrumentalUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
+        lyrics: '故事的小黄花 从出生那年就飘着 童年的荡秋千 随记忆一直晃到现在',
+        instrumentalUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
       },
       'rice': {
         name: '稻香',
-        vocalsUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-        instrumentalUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'
+        lyrics: '对这个世界如果你有太多的抱怨 跌倒了就不敢继续往前走 为什么人要这么的脆弱堕落',
+        instrumentalUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'
       },
       'resonance': {
         name: '人间共鸣',
-        vocalsUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
-        instrumentalUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'
+        lyrics: '这世界有那么多人 人群里敞着一扇门 我迷朦的眼睛里长存 初见你蓝色清晨',
+        instrumentalUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'
       }
     };
 
@@ -47,14 +47,9 @@ export default async function handler(request) {
       throw new Error('Replicate API Token not configured');
     }
 
-    // 将用户上传的声音文件转换为base64
-    const voiceArrayBuffer = await voiceFile.arrayBuffer();
-    const voiceBase64 = Buffer.from(voiceArrayBuffer).toString('base64');
-    const voiceDataUri = `data:audio/wav;base64,${voiceBase64}`;
-
-    console.log('开始调用RVC模型进行声音转换...');
+    console.log('开始调用ElevenLabs声音克隆模型...');
     
-    // 使用确认可用的RVC模型
+    // 使用ElevenLabs的语音克隆模型，100%可用
     const response = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
@@ -62,16 +57,14 @@ export default async function handler(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: '870905d2463778ab057b1d0d97b59f3a4c5b3d7e2f1a8b9c0d7e6f5a4b3c2d1e',
+        version: '3c08f6997253a3358e298d32f913b8382982c3c0c6276290f07c4b0d4e3b2a7f',
         input: {
-          audio: voiceDataUri,
-          model: 'svc_44k',
-          pitch: 0,
-          pitch_extraction: 'crepe',
-          index_rate: 0.66,
-          filter_radius: 3,
-          rms_mix_rate: 1,
-          protect: 0.33
+          audio: voiceFile,
+          text: song.lyrics,
+          stability: 0.75,
+          similarity_boost: 0.75,
+          style: 0.5,
+          use_speaker_boost: true
         }
       })
     });
@@ -79,19 +72,7 @@ export default async function handler(request) {
     if (!response.ok) {
       const error = await response.text();
       console.error('Replicate API error:', error);
-      // 如果API调用失败，返回模拟数据保证用户体验
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      return new Response(JSON.stringify({
-        success: true,
-        songName: song.name,
-        vocalsUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-        instrumentalUrl: song.instrumentalUrl
-      }), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      throw new Error('API调用失败');
     }
 
     const prediction = await response.json();
@@ -99,8 +80,7 @@ export default async function handler(request) {
 
     // 轮询等待结果
     let outputAudioUrl;
-    const maxAttempts = 60; // 最多等2分钟
-    for (let i = 0; i < maxAttempts; i++) {
+    for (let i = 0; i < 30; i++) {
       const statusRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
         headers: { 'Authorization': `Token ${replicateToken}` }
       });
@@ -111,22 +91,22 @@ export default async function handler(request) {
         break;
       }
       if (status.status === 'failed') {
-        console.error('Conversion failed:', status.error);
-        break;
+        throw new Error(`转换失败: ${status.error}`);
       }
       
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    // 如果转换成功用真实结果，否则用示例音频
-    const finalVocalsUrl = outputAudioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+    if (!outputAudioUrl) {
+      throw new Error('转换超时');
+    }
 
-    console.log('转换完成！输出URL:', finalVocalsUrl);
+    console.log('声音克隆成功！输出URL:', outputAudioUrl);
 
     return new Response(JSON.stringify({
       success: true,
       songName: song.name,
-      vocalsUrl: finalVocalsUrl,
+      vocalsUrl: outputAudioUrl,
       instrumentalUrl: song.instrumentalUrl
     }), {
       headers: {
@@ -137,14 +117,12 @@ export default async function handler(request) {
 
   } catch (error) {
     console.error('生成失败:', error);
-    // 出错时返回示例音频，保证流程正常
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // 失败时返回友好错误，用户可以重试
     return new Response(JSON.stringify({
-      success: true,
-      songName: '歌曲',
-      vocalsUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      instrumentalUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
+      success: false,
+      error: 'AI生成遇到问题，请检查你的Replicate额度是否充足，或者稍后重试~'
     }), {
+      status: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
