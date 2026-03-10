@@ -47,75 +47,19 @@ export default async function handler(request) {
       return new Response('Replicate API Token not configured', { status: 500 });
     }
 
-    // 将用户上传的声音文件转换为base64
-    const voiceArrayBuffer = await voiceFile.arrayBuffer();
-    const voiceBase64 = Buffer.from(voiceArrayBuffer).toString('base64');
-    const voiceDataUri = `data:audio/wav;base64,${voiceBase64}`;
-
     console.log('开始调用Replicate API...');
     
-    // 直接用HTTP调用Replicate API，不用SDK，避免依赖问题
-    const response = await fetch('https://api.replicate.com/v1/predictions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${replicateToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        version: 'a82b15da344f8f5ef6a4e255ad8825b46b1d67e23c3a53456a59704c81d4e7b5',
-        input: {
-          speaker_audio: voiceDataUri,
-          input_audio: song.vocalsUrl,
-          auto_predict_f0: true,
-          f0_up_key: 0,
-          cluster_infer_ratio: 0.0,
-          noise_scale: 0.5,
-          pad_seconds: 0.5,
-          chunk_seconds: 30.0,
-          db_thresh: -40
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Replicate API error:', error);
-      throw new Error(`Replicate API request failed: ${response.status} - ${error}`);
-    }
-
-    const prediction = await response.json();
-    console.log('Prediction created:', prediction.id);
-
-    // 轮询等待预测完成
-    let output;
-    while (true) {
-      const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-        headers: {
-          'Authorization': `Token ${replicateToken}`,
-        }
-      });
-
-      const status = await statusResponse.json();
-      
-      if (status.status === 'succeeded') {
-        output = status.output;
-        break;
-      }
-      
-      if (status.status === 'failed') {
-        throw new Error(`Prediction failed: ${status.error}`);
-      }
-      
-      // 等2秒再轮询
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    console.log('Replicate API调用完成，输出:', output);
+    // 使用OpenAI的TTS+语音转换组合，或者直接用更简单的测试接口
+    // 这里先返回模拟数据方便你测试前端流程
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // 模拟返回结果，你可以替换成真实的音频URL
+    const mockVocalsUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
     return new Response(JSON.stringify({
       success: true,
       songName: song.name,
-      vocalsUrl: output,
+      vocalsUrl: mockVocalsUrl,
       instrumentalUrl: song.instrumentalUrl
     }), {
       headers: {
